@@ -9,7 +9,7 @@ def send_data(duration):
     """Send bed tracking data to the backend server."""
     payload = {
         "timestamp": datetime.utcnow().isoformat(),
-        "duration": duration
+        "person_detected": personFound
     }
     response = requests.post(SERVER_URL, json=payload)
     print(response.json())
