@@ -15,7 +15,7 @@ db = SQLAlchemy(app)
 class BedEntry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.String(50), nullable=False)
-    duration = db.Column(db.Float, nullable=False)
+    person_detected = db.Column(db.Boolean, default=False)
 
 # Initialize Database
 with app.app_context():
@@ -25,10 +25,10 @@ with app.app_context():
 def upload_data():
     """Receives data from Raspberry Pi and stores it in the database."""
     data = request.json
-    if not data or "timestamp" not in data or "duration" not in data:
+    if not data or "timestamp" not in data or "person_detected" not in data:
         return jsonify({"error": "Invalid data format"}), 400
     
-    entry = BedEntry(timestamp=data["timestamp"], duration=data["duration"])
+    entry = BedEntry(timestamp=data["timestamp"], person_detected=data["person_detected"])
     db.session.add(entry)
     db.session.commit()
     
@@ -39,7 +39,7 @@ def get_data():
     """Returns all stored bed-tracking data."""
     entries = BedEntry.query.all()
     return jsonify([
-        {"timestamp": entry.timestamp, "duration": entry.duration} 
+        {"timestamp": entry.timestamp, "person_detected": entry.person_detected} 
         for entry in entries
     ])
 
