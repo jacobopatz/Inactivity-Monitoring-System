@@ -1,5 +1,5 @@
 import time
-from datetime import datetime
+from datetime import datetime, timezone
 import sys
 from camera import capture_frame, test_capture
 from detector import detect_person
@@ -13,8 +13,8 @@ start_time = None
 # Test function to send a piece of test data to the backend
 def send_test_data():
     payload = {
-        "timestamp": datetime.utcnow().isoformat(),
-        "duration": 5.0 # Example duration
+        "timestamp": datetime.now(timezone.utc).isoformat(),
+        "person_detected": False, # Example value
     }
     try:
         response = requests.post(BACKEND_URL, json=payload)
@@ -48,6 +48,7 @@ def main():
             if personFound and not in_bed:
                 print("Person is in bed!")
                 start_time = datetime.utcnow()
+                in_bed = True
             elif not personFound and in_bed:
                 print("person just left the bed!")
                 in_bed = False
@@ -63,6 +64,6 @@ def main():
 
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "test":
-        test()
+        send_test_data()
     else:
         main()
