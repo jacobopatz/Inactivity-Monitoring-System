@@ -29,38 +29,73 @@ function Info() {
     axios.get("http://127.0.0.1:5000/data")
       .then((res) => {
         const raw = res.data;
-        const durations = [];
+        const durations = {};
         const today = new Date();
         const todayString = today.toISOString().split("T")[0];
         let todayTotal = 0;
+        let i = 0;
+
+        while (i < raw.length){
+          if (raw[i].person_detected) {
+            let j = i + 1;
+            while (j < raw.length && raw[j].person_detected) {
+              j++;
+            }
+            
+            if (j < raw.length && !raw[j].person_detected) {
+              const start = new Date(raw[i].timestamp);
+              const end = new Date(raw[j].timestamp);
+              const duration = (end - start) / (1000 * 60); // in minutes
+              
+              const day = start.toLocaleDateString("en-US", { weekday: "short" });
+
+              durations[day] = (durations[day] ||0) + duration;
+
+              if (start.toISOString().split("T")[0] === todayString) {
+                todayTotal += duration;
+              }
+              i = j + 1; // Move to the next non-person detected entry
+            } else{
+              break;
+            }
+          } else {
+            i++;
+          }
+        }
         
 
-        for (let i = 0; i < raw.length -1; i++) {
-            if(raw[i].person_detected && !raw[i + 1].person_detected) {
-                const start = new Date(raw[i].timestamp);
-                const end = new Date(raw[i + 1].timestamp);
-                const duration = (end - start) / (1000 * 60); // in minutes
-                
-                durations.push({
-                    date: start.toISOString().split("T")[0],
-                    duration: duration
-                });
-                
-                if (start.toISOString().split("T")[0] === todayString) {
-                    todayTotal += duration;
-                }
-            }
-         }
-         
-        setDailyStats(durations);
+        const r = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(day => ({
+          day,
+          duration: durations[day] || 0
+        }));
+        setDailyStats(r);
         setTodayTime(todayTotal);
-    });
+        
+      });
     }, []);
 
   return (
     <div style={{ width: "100%", height: 300 }}>
             <div>
                 Total time in bed today: {todayTime} minutes
+
+                {/* Uncomment the following lines to display daily stats */}
+                {/* {dailyStats.map((stat) => (
+                    <div key={stat.day}>
+                        {stat.day}: {stat.duration} minutes
+                    </div>
+                ))} */}
+            </div>
+            <div style={{ width: "100%", height: 300 }}>
+            <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={dailyStats}>
+                    <CartesianGrid strokeDasharray="3 3" />
+                    <XAxis dataKey="day" />
+                    <YAxis label = {{ value: "Minutes", angle: -90, position:"insideLeft"}}/>
+                    <Tooltip />
+                    <Bar dataKey="duration" fill="#8884d8" />
+                </BarChart>
+            </ResponsiveContainer>
             </div>
             
         <button onClick={() => nav("/")}>
