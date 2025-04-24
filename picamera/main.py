@@ -25,10 +25,10 @@ def send_test_data():
 # Call the test function
 
 
-def send_to_backend(duration):
+def send_to_backend(person_detected):
     payload = {
         "timestamp": datetime.utcnow().isoformat(),
-        "duration": duration
+        "person_detected": person_detected
     }
     try:
         response = requests.post(BACKEND_URL, json=payload)
@@ -38,25 +38,25 @@ def send_to_backend(duration):
 
 
 def main():
-    global in_bed, start_time
+    global in_bed
     while True:
         try:
             # frame = capture_frame()
             frame = capture_frame()
             personFound = detect_person(frame)
             # send_detection(person_found, BACKEND_URL)
-            if personFound and not in_bed:
+            if personFound != in_bed:
                 print("Person is in bed!")
-                start_time = datetime.utcnow()
-                in_bed = True
-            elif not personFound and in_bed:
-                print("person just left the bed!")
-                in_bed = False
-                duration = (datetime.utcnow() - start_time).total_seconds()
-                send_to_backend(duration)
-                print(f"Sent Duration: {duration} seconds to backend")
+                
+                if personFound:
+                    print("Person detected!")
+                else:
+                    print("Person not detected!")
+                
+                send_to_backend(personFound)
             else:
-                print("no person detected")
+                print("No change in detection status.")
+                
         except Exception as e:
             print(f"Error in loop: {e}")
         time.sleep(INTERVAL_SECONDS)
