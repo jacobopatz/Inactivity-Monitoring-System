@@ -16,7 +16,7 @@ class BedEntry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     timestamp = db.Column(db.String(50), nullable=False)
     person_detected = db.Column(db.Boolean, default=False)
-
+ 
 # Initialize Database
 with app.app_context():
     db.create_all()

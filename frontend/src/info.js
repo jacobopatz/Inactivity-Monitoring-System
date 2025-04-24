@@ -10,19 +10,33 @@ import {
   ResponsiveContainer,
   CartesianGrid
 } from "recharts";
+import "./info.css";
+
+
+// tooltip behavior for the bar chart when hovered over
+const CustomTooltip = ({ active, payload, label }) => {
+  if (active && payload && payload.length) {
+    const totalMinutes = payload[0].value;
+    const hours = Math.floor(totalMinutes / 60);
+    const minutes = Math.round(totalMinutes % 60);
+
+    return (
+      <div className="custom-tooltip" style={{ backgroundColor: "#fff", border: "1px solid #ccc", padding: "8px" }}>
+        <p className="label">{label}</p>
+        <p className="intro">
+          {hours} hour{hours !== 1 ? "s" : ""} {minutes} minute{minutes !== 1 ? "s" : ""}
+        </p>
+      </div>
+    );
+  }
+
+  return null;
+};
 
 function Info() {
   const nav = useNavigate();
-  const [dailyStats, setDailyStats] = useState([
-    { day: "Mon", duration: 0 },
-    { day: "Tue", duration: 0 },
-    { day: "Wed", duration: 0 },
-    { day: "Thu", duration: 0 },
-    { day: "Fri", duration: 0 },
-    { day: "Sat", duration: 0 },
-    { day: "Sun", duration: 0},
-  ]);
-
+  
+  const [dailyStats, setDailyStats] = useState([]);
   const [todayTime, setTodayTime] = useState(0);
 
   useEffect(() => {
@@ -38,9 +52,7 @@ function Info() {
         while (i < raw.length){
           if (raw[i].person_detected) {
             let j = i + 1;
-            while (j < raw.length && raw[j].person_detected) {
-              j++;
-            }
+            while (j < raw.length && raw[j].person_detected) j++;
             
             if (j < raw.length && !raw[j].person_detected) {
               const start = new Date(raw[i].timestamp);
@@ -48,12 +60,12 @@ function Info() {
               const duration = (end - start) / (1000 * 60); // in minutes
               
               const day = start.toLocaleDateString("en-US", { weekday: "short" });
-
               durations[day] = (durations[day] ||0) + duration;
 
               if (start.toISOString().split("T")[0] === todayString) {
                 todayTotal += duration;
               }
+
               i = j + 1; // Move to the next non-person detected entry
             } else{
               break;
@@ -62,44 +74,48 @@ function Info() {
             i++;
           }
         }
-        
 
         const r = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(day => ({
           day,
           duration: durations[day] || 0
         }));
+
         setDailyStats(r);
         setTodayTime(todayTotal);
-        
       });
     }, []);
 
   return (
-    <div style={{ width: "100%", height: 300 }}>
-            <div>
-                Total time in bed today: {todayTime} minutes
+    <div className = "info-container" style={{ width: "100%", height: 300 }}>
+        <div className = "stat-text">
+          Total time in bed today: {Math.floor(todayTime / 60)} hours {Math.round(todayTime % 60)} minutes 
+              {/* Uncomment the following lines to display daily stats */}
+              {/* {dailyStats.map((stat) => (
+                  <div key={stat.day}>
+                      {stat.day}: {stat.duration} minutes
+                  </div>
+              ))} */}
+        </div>
+        <div className = "stat-text">
+          Average time in bed this week: {Math.floor(dailyStats.reduce((acc, stat) => acc + stat.duration, 0) / 7)} minutes
+        </div>
 
-                {/* Uncomment the following lines to display daily stats */}
-                {/* {dailyStats.map((stat) => (
-                    <div key={stat.day}>
-                        {stat.day}: {stat.duration} minutes
-                    </div>
-                ))} */}
-            </div>
-            <div style={{ width: "100%", height: 300 }}>
-            <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={dailyStats}>
-                    <CartesianGrid strokeDasharray="3 3" />
-                    <XAxis dataKey="day" />
-                    <YAxis label = {{ value: "Minutes", angle: -90, position:"insideLeft"}}/>
-                    <Tooltip />
-                    <Bar dataKey="duration" fill="#8884d8" />
-                </BarChart>
-            </ResponsiveContainer>
-            </div>
+        {/* Bar chart for daily stats */}
+        <div style={{ width: "100%", height: 300 }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <BarChart data={dailyStats}>
+              <CartesianGrid strokeDasharray="3 3" />
+              <XAxis dataKey="day" />
+              <YAxis label = {{ value: "Minutes", angle: -90, position:"insideLeft"}}/>
+              <Tooltip content={<CustomTooltip/>} /> {/* Custom tooltip behavior*/}
+              <Bar dataKey="duration" fill="#8884d8" />
+            </BarChart>
+          </ResponsiveContainer>
+        </div>
             
-        <button onClick={() => nav("/")}>
-        Back to Home
+        {/* Button to go back to home */}
+        <button className="back-button" onClick={() => nav("/")}>
+          Back to Home
         </button>
     </div>
   );

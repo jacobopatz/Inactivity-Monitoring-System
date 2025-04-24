@@ -1,0 +1,31 @@
+.info-container {
+  background-color: #ffffff;
+  min-height: 100vh;
+  padding: 40px 20px;
+  font-family: 'Poppins', sans-serif;
+  text-align: center;
+}
+
+.stat-text{
+  font-size: 1.5rem;
+  font-weight: 600;
+  color: #0e0d1b;
+  margin-bottom: 20px;
+}
+
+.back-btn {
+    background-color: #6366f1;
+    color: white;
+    border: none;
+    padding: 12px 24px;
+    border-radius: 10px;
+    font-size: 1rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s ease;
+  }
+  
+  .back-btn:hover {
+    background-color: #4f46e5;
+    transform: translateY(-2px);
+  }
