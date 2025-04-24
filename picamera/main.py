@@ -1,20 +1,21 @@
 import time
-from datetime import datetime, timezone
+from datetime import datetime
 import sys
+import requests
 from camera import capture_frame, test_capture
 from detector import detect_person
-import requests
 
 INTERVAL_SECONDS = 1
 BACKEND_URL = "http://127.0.0.1:5000/upload"
 
 in_bed = False
 start_time = None
+
 # Test function to send a piece of test data to the backend
 def send_test_data():
     payload = {
-        "timestamp": datetime.now(timezone.utc).isoformat(),
-        "person_detected": False, # Example value
+        "timestamp": datetime.utcnow().isoformat(),
+        "duration": 5.0  # Example duration
     }
     try:
         response = requests.post(BACKEND_URL, json=payload)
@@ -22,13 +23,11 @@ def send_test_data():
     except Exception as e:
         print(f"Error sending test data to backend: {e}")
 
-# Call the test function
-
-
-def send_to_backend(person_detected):
+# Function to send actual data to the backend
+def send_to_backend(duration):
     payload = {
         "timestamp": datetime.utcnow().isoformat(),
-        "person_detected": person_detected
+        "duration": duration
     }
     try:
         response = requests.post(BACKEND_URL, json=payload)
@@ -36,31 +35,29 @@ def send_to_backend(person_detected):
     except Exception as e:
         print(f"Error sending data to backend: {e}")
 
-
 def main():
-    global in_bed
+    global in_bed, start_time
     while True:
         try:
-            # frame = capture_frame()
             frame = capture_frame()
-            personFound = detect_person(frame)
-            # send_detection(person_found, BACKEND_URL)
-            if personFound != in_bed:
+            person_found = detect_person(frame)
+
+            if person_found and not in_bed:
                 print("Person is in bed!")
-                
-                if personFound:
-                    print("Person detected!")
-                else:
-                    print("Person not detected!")
-                
-                send_to_backend(personFound)
+                in_bed = True
+                start_time = datetime.utcnow()
+            elif not person_found and in_bed:
+                print("Person just left the bed!")
+                in_bed = False
+                duration = (datetime.utcnow() - start_time).total_seconds()
+                send_to_backend(duration)
+                print(f"Sent Duration: {duration} seconds to backend")
             else:
-                print("No change in detection status.")
-                
+                print("No person detected")
         except Exception as e:
             print(f"Error in loop: {e}")
+        
         time.sleep(INTERVAL_SECONDS)
-
 
 if __name__ == "__main__":
     if len(sys.argv) > 1 and sys.argv[1] == "test":
