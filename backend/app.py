@@ -14,32 +14,43 @@ db = SQLAlchemy(app)
 # Define Database Model
 class BedEntry(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    timestamp = db.Column(db.String(50), nullable=False)
-    person_detected = db.Column(db.Boolean, default=False)
- 
+    start_time = db.Column(db.DateTime, nullable=False)
+    duration_seconds = db.Column(db.Float, default=0.0)
+
 # Initialize Database
 with app.app_context():
     db.create_all()
 
+# Upload endpoint
 @app.route('/upload', methods=['POST'])
 def upload_data():
     """Receives data from Raspberry Pi and stores it in the database."""
     data = request.json
-    if not data or "timestamp" not in data or "person_detected" not in data:
+    if not data or "start_time" not in data or "duration_seconds" not in data:
         return jsonify({"error": "Invalid data format"}), 400
     
-    entry = BedEntry(timestamp=data["timestamp"], person_detected=data["person_detected"])
+    try:
+        start_time = datetime.fromisoformat(data["start_time"])
+        duration = float(data["duration_seconds"])
+    except (ValueError, TypeError):
+        return jsonify({"error": "Invalid data types"}), 400
+
+    entry = BedEntry(start_time=start_time, duration_seconds=duration)
     db.session.add(entry)
     db.session.commit()
     
     return jsonify({"message": "Data received"}), 200
 
+# Retrieve endpoint
 @app.route('/data', methods=['GET'])
 def get_data():
     """Returns all stored bed-tracking data."""
     entries = BedEntry.query.all()
     return jsonify([
-        {"timestamp": entry.timestamp, "person_detected": entry.person_detected} 
+        {
+            "start_time": entry.start_time.isoformat(),
+            "duration_seconds": entry.duration_seconds
+        }
         for entry in entries
     ])
 

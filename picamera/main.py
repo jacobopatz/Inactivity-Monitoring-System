@@ -5,7 +5,7 @@ import requests
 from camera import capture_frame, test_capture
 from detector import detect_person
 
-INTERVAL_SECONDS = 1
+INTERVAL_SECONDS = 4
 BACKEND_URL = "http://127.0.0.1:5000/upload"
 
 in_bed = False
@@ -24,10 +24,10 @@ def send_test_data():
         print(f"Error sending test data to backend: {e}")
 
 # Function to send actual data to the backend
-def send_to_backend(duration):
+def send_to_backend(start_time, duration):
     payload = {
-        "timestamp": datetime.utcnow().isoformat(),
-        "duration": duration
+        "start_time":start_time.isoformat(),
+        "duration_seconds": duration
     }
     try:
         response = requests.post(BACKEND_URL, json=payload)
@@ -50,8 +50,10 @@ def main():
                 print("Person just left the bed!")
                 in_bed = False
                 duration = (datetime.utcnow() - start_time).total_seconds()
-                send_to_backend(duration)
+                send_to_backend(start_time,duration)
                 print(f"Sent Duration: {duration} seconds to backend")
+            elif person_found and in_bed:
+                print("person still in bed")
             else:
                 print("No person detected")
         except Exception as e:
