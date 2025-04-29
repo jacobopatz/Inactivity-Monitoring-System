@@ -29,3 +29,10 @@
     background-color: #4f46e5;
     transform: translateY(-2px);
   }
+  .week-nav-buttons {
+    display: flex;
+    gap: 30px; /* 🔥 space between buttons */
+    margin: 10px 0;
+    justify-self: center;
+
+  }

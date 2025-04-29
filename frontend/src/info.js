@@ -38,14 +38,32 @@ function Info() {
   
   const [dailyStats, setDailyStats] = useState([]);
   const [todayTime, setTodayTime] = useState(0);
-
+  const [weekOffset, setWeekOffset] = useState(0); //set which week you're viewing
   useEffect(() => {
     axios.get("http://127.0.0.1:5000/data")
       .then((res) => {
         const raw = res.data;
         const durations = {};
         const today = new Date();
-        const todayString = today.toISOString().split("T")[0];
+        const baseDay = new Date();
+        today.setDate(today.getDate()); // shift back by 7 days * offset
+        baseDay.setDate(baseDay.getDate() - (7 * weekOffset)); //this day allows for checking past weeks
+        const todayString = today.toLocaleDateString('en-CA').split("T")[0];
+        const days = [];
+        
+       
+       
+        
+        
+        for (let i = 6; i >= 0; i--) {
+          const d = new Date(baseDay);  // fresh copy every loop
+          d.setDate(baseDay.getDate() - i);
+          days.push(d.toLocaleDateString('en-CA').split("T")[0]);
+        }
+        
+        days.forEach(dateStr => {
+          durations[dateStr] = 0;  // Initialize all the dates you're displaying
+        });
         let todayTotal = 0;
         let i = 0;
 
@@ -59,10 +77,13 @@ function Info() {
               const end = new Date(raw[j].timestamp);
               const duration = (end - start) / (1000 * 60); // in minutes
               
-              const day = start.toLocaleDateString("en-US", { weekday: "short" });
-              durations[day] = (durations[day] ||0) + duration;
+              const startDate = start.toLocaleDateString('en-CA').split("T")[0];
+              //group by date string instead of day name, allows checking for past weeks
+              if (durations.hasOwnProperty(startDate)) {
+                durations[startDate] += duration;
+              }
 
-              if (start.toISOString().split("T")[0] === todayString) {
+              if (start.toLocaleDateString('en-CA').split("T")[0] === todayString) {
                 todayTotal += duration;
               }
 
@@ -74,16 +95,18 @@ function Info() {
             i++;
           }
         }
-
-        const r = ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"].map(day => ({
-          day,
-          duration: durations[day] || 0
-        }));
+        
+        const r = days.map(dateStr => {
+          const d = new Date(dateStr);
+          const label = new Date(dateStr).toLocaleDateString("en-US", { weekday: "short" } + " " + (d.getMonth() + 1) + "/" + d.getDate());
+          return { day: label, duration: durations[dateStr] };
+        });
+        
 
         setDailyStats(r);
         setTodayTime(todayTotal);
       });
-    }, []);
+    }, [weekOffset]);
 
   return (
     <div className = "info-container" style={{ width: "100%", height: 300 }}>
@@ -99,7 +122,13 @@ function Info() {
         <div className = "stat-text">
           Average time in bed this week: {Math.floor(dailyStats.reduce((acc, stat) => acc + stat.duration, 0) / 7)} minutes
         </div>
-
+        {/* add button to toggle week*/}
+        <div className="week-nav-buttons">
+          <button onClick={() => setWeekOffset(prev => prev + 1)}>← Previous Week</button>
+          <button onClick={() => setWeekOffset(prev => Math.max(0, prev - 1))} disabled={weekOffset === 0}>
+            Next Week → 
+          </button>
+        </div>
         {/* Bar chart for daily stats */}
         <div style={{ width: "100%", height: 300 }}>
           <ResponsiveContainer width="100%" height="100%">

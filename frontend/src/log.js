@@ -12,7 +12,9 @@ function Log() {
         axios.get("http://127.0.0.1:5000/data") // Fetching data
           .then((res) => {
             if (Array.isArray(res.data)) {
-              setLogData(res.data);
+              //show newest entries first
+              const reversedData = res.data.slice().reverse();
+              setLogData(reversedData);
             } else {
               console.error("Unexpected response format:", res.data);
             }

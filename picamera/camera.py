@@ -5,8 +5,7 @@ def capture_frame(camera_index=0):
     cap = cv2.VideoCapture(camera_index)
     ret, frame = cap.read()
 
-    #write to image (FOR TESTING ONLY)
-    cv2.imwrite("captured_frame.jpg", frame)
+
     cap.release()
 
     if not ret:
