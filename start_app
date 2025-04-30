@@ -1,0 +1,19 @@
+#!/bin/bash
+
+# Start a new tmux session named bedapp
+tmux new-session -d -s bedapp
+
+# Pane 0: Flask backend
+tmux send-keys -t bedapp "conda activate venv && cd ~/BedRotTracker/backend && python app.py" C-m
+
+# Split horizontally and run PiCamera
+tmux split-window -v -t bedapp
+tmux send-keys -t bedapp "conda activate venv && cd ~/BedRotTracker/picamera && python main.py" C-m
+
+# Split vertically again and run React frontend
+tmux split-window -h -t bedapp
+tmux send-keys -t bedapp "cd ~/BedRotTracker/frontend && npm start" C-m
+
+# Attach to the session
+tmux select-layout -t bedapp tiled
+tmux attach-session -t bedapp
