@@ -9,7 +9,7 @@ function Log() {
     const nav = useNavigate();
     
     useEffect(() => {
-        axios.get("http://127.0.0.1:5000/data") // Fetching data
+        axios.get("http://127.0.0.1:5001/data") // Fetching data
           .then((res) => {
             if (Array.isArray(res.data)) {
               //show newest entries first

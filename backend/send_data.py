@@ -3,7 +3,7 @@ import json
 from datetime import datetime
 import time
 
-SERVER_URL = "http://127.0.0.1:5000"  # Replace with Flask server IP
+SERVER_URL = "http://127.0.0.1:5001"  # Replace with Flask server IP
 
 def send_data(duration):
     """Send bed tracking data to the backend server."""

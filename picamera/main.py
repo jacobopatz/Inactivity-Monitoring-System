@@ -6,7 +6,7 @@ from camera import capture_frame, test_capture
 from detector import detect_person
 
 INTERVAL_SECONDS = 20
-BACKEND_URL = "http://127.0.0.1:5000/upload"
+BACKEND_URL = "http://127.0.0.1:5001/upload"
 
 in_bed = False
 start_time = None

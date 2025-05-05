@@ -9,7 +9,7 @@ const BedTimeDashboard = () => {
   const [isInBed, setIsInBed] = useState(false);
   
   useEffect(() => {
-    axios.get("http://127.0.0.1:5000/data") // Data url
+    axios.get("http://127.0.0.1:5001/data") // Data url
       .then((res) => {
         if (Array.isArray(res.data)) {
           setData(res.data);
