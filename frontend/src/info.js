@@ -40,7 +40,7 @@ function Info() {
   const [todayTime, setTodayTime] = useState(0);
   const [weekOffset, setWeekOffset] = useState(0); //set which week you're viewing
   useEffect(() => {
-    axios.get("http://127.0.0.1:1/data")
+    axios.get("http://127.0.0.1:5001/data")
       .then((res) => {
         const raw = res.data;
         const durations = {};
@@ -97,8 +97,9 @@ function Info() {
         }
         
         const r = days.map(dateStr => {
-          const d = new Date(dateStr);
-          const label = new Date(dateStr).toLocaleDateString("en-US", { weekday: "short" } + " " + (d.getMonth() + 1) + "/" + d.getDate());
+          const d = new Date(dateStr + "T00:00:00"); // ensure local midnight to avoid timezone shifts
+          const weekday = d.toLocaleDateString("en-US", { weekday: "short" });
+          const label = `${weekday} ${d.getMonth() + 1}/${d.getDate()}`;
           return { day: label, duration: durations[dateStr] };
         });
         
