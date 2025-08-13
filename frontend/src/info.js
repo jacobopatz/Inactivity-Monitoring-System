@@ -40,7 +40,7 @@ function Info() {
   const [todayTime, setTodayTime] = useState(0);
   const [weekOffset, setWeekOffset] = useState(0); //set which week you're viewing
   useEffect(() => {
-    axios.get("http://127.0.0.1:5001/data")
+    axios.get("https://inactivity-monitoring-system-backend.onrender.com/data")
       .then((res) => {
         const raw = res.data;
         const durations = {};
