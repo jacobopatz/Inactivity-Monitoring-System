@@ -1,70 +1,74 @@
-# Getting Started with Create React App
+# Inactivity Monitoring System
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+A personal inactivity monitoring system that leverages computer vision, IoT, and web technologies to track and visualize periods of inactivity. The system consists of:
 
-## Available Scripts
+- **Raspberry Pi** with a camera and YOLO-based visual detection for person presence.
+- **Flask** backend with an SQLAlchemy database for data storage and API endpoints.
+- **React** frontend for an interactive dashboard and visualization.
 
-In the project directory, you can run:
+## Overview
 
-### `npm start`
+The project is divided into three main components:
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in your browser.
+### 1. `picamera/` — Raspberry Pi Detection Module
+- Runs Python scripts directly on a Raspberry Pi connected to a camera.
+- Utilizes the **YOLO** object detection model to identify the presence of a person in the camera’s view.
+- Processes detection results locally and sends boolean values (`person_detected = True/False`) to the backend via secure **HTTP requests**.
+- Designed to run continuously and efficiently on Raspberry Pi hardware.
 
-The page will reload when you make changes.\
-You may also see any lint errors in the console.
+### 2. `backend/` — Flask API and Database
+- Built with **Flask** to serve as the communication bridge between the Raspberry Pi and the frontend dashboard.
+- Stores detection events in a **SQLAlchemy**-managed relational database.
+- Parses and validates incoming data from the Raspberry Pi before committing it to the database.
+- Provides RESTful API endpoints for data retrieval by the frontend.
 
-### `npm test`
+### 3. `frontend/` — React Dashboard
+- Implements a clean, responsive UI for the end user.
+- Fetches data from the Flask backend to display inactivity patterns and statistics.
+- Offers visualizations of **time spent inactive**, such as periods spent in locations (e.g., couch) associated with inactivity.
+- Designed with usability in mind, providing actionable insights into personal activity levels.
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## Technology Stack
 
-### `npm run build`
+**Hardware**
+- Raspberry Pi with camera module
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+**Backend**
+- Python
+- Flask
+- SQLAlchemy
+- YOLO (via Python)
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+**Frontend**
+- React
+- JavaScript (ES6+)
+- CSS/HTML
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+**Communication**
+- Secure HTTP requests between Raspberry Pi and Flask API
 
-### `npm run eject`
+## Project Structure
 
-**Note: this is a one-way operation. Once you `eject`, you can't go back!**
+```text
+inactivity-monitoring-system/
+│
+├── picamera/   # Raspberry Pi detection scripts (YOLO processing + HTTP requests)
+├── backend/    # Flask API and SQLAlchemy database integration
+└── frontend/   # React-based dashboard UI
+```
 
-If you aren't satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+## How It Works
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you're on your own.
+1. **Detection** — The Raspberry Pi Captures a photo at an interval decided by the user, runs yolo detection on this image, and decides whether a person is present or not. 
+2. **Data Transmission** — Each detection result is sent via an HTTP POST request to the backend. No image is ever sent and only exists momentarily on the rasberry pi.
+3. **Storage** — The Flask backend processes the request and records the detection event in the SQLAlchemy database.
+4. **Visualization** — The React frontend fetches the data and displays an interactive dashboard showing inactivity trends.
 
-You don't have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn't feel obligated to use this feature. However we understand that this tool wouldn't be useful if you couldn't customize it when you are ready for it.
+## Potential Applications
+- Personal wellness tracking
+- Productivity improvement
+- Health-related inactivity monitoring
 
-## Learn More
+---
 
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
-
-### Code Splitting
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/code-splitting](https://facebook.github.io/create-react-app/docs/code-splitting)
-
-### Analyzing the Bundle Size
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size](https://facebook.github.io/create-react-app/docs/analyzing-the-bundle-size)
-
-### Making a Progressive Web App
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app](https://facebook.github.io/create-react-app/docs/making-a-progressive-web-app)
-
-### Advanced Configuration
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/advanced-configuration](https://facebook.github.io/create-react-app/docs/advanced-configuration)
-
-### Deployment
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/deployment](https://facebook.github.io/create-react-app/docs/deployment)
-
-### `npm run build` fails to minify
-
-This section has moved here: [https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify](https://facebook.github.io/create-react-app/docs/troubleshooting#npm-run-build-fails-to-minify)
+**Note:** This project is for personal and educational purposes. When deploying in real environments, ensure compliance with privacy laws and ethical data practices.
